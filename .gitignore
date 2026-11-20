@@ -14,9 +14,6 @@ __pycache__/
 .venv/
 .pytest_cache/
 
-# Repository maintenance scripts
-/scripts/
-
 # Private validation evidence and generated packages
 /artifacts/
 /.playwright-mcp/
@@ -42,7 +39,6 @@ __pycache__/
 *.key
 
 # Local working notes and private reports
-/scripts
 /notes/
 /reports/
 /docs/_private/
@@ -68,3 +64,6 @@ __pycache__/
 *~
 .DS_Store
 Thumbs.db
+
+# Local change summary
+/Differences.md
