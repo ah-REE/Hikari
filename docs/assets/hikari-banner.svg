@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title desc">
+  <title id="title">Hikari — YouTube, with less noise.</title>
+  <desc id="desc">The coral Hikari mark beside the app name on a dark background, with a soft coral glow. Find intentionally. Watch comfortably. Keep what matters.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#191A1D"/>
+      <stop offset="1" stop-color="#101112"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop stop-color="#FF785C" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#FF785C" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="frame"><rect width="1200" height="340" rx="28"/></clipPath>
+  </defs>
+  <g clip-path="url(#frame)">
+    <rect width="1200" height="340" fill="url(#background)"/>
+    <circle cx="1030" cy="160" r="290" fill="url(#glow)"/>
+
+    <rect x="56" y="62" width="108" height="108" rx="24" fill="#101112" stroke="#303033"/>
+    <g transform="translate(56 62)" fill="none" stroke="#FF785C" stroke-linecap="round">
+      <path d="M36 28 47 80 M64 38 72 69" stroke-width="10"/>
+      <path d="M27 65 80 38" stroke-width="7.5"/>
+    </g>
+    <g font-family="Inter, system-ui, -apple-system, 'Segoe UI', sans-serif">
+      <text x="192" y="141" font-size="76" font-weight="750" letter-spacing="-3" fill="#F7F4F2">Hikari</text>
+      <text x="58" y="218" font-size="29" font-weight="500" fill="#E5DED9">YouTube, with less noise.</text>
+      <rect x="58" y="254" width="44" height="3" rx="1.5" fill="#FF785C"/>
+      <text x="58" y="292" font-size="18" fill="#BDB5AF">Find intentionally.</text>
+      <circle cx="235" cy="286" r="2" fill="#FF785C"/>
+      <text x="253" y="292" font-size="18" fill="#BDB5AF">Watch comfortably.</text>
+      <circle cx="450" cy="286" r="2" fill="#FF785C"/>
+      <text x="468" y="292" font-size="18" fill="#BDB5AF">Keep what matters.</text>
+    </g>
+    <rect x=".5" y=".5" width="1199" height="339" rx="27.5" fill="none" stroke="#FFFFFF" stroke-opacity=".07"/>
+  </g>
+</svg>

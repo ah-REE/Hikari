@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108" role="img" aria-labelledby="title desc">
+  <title id="title">Hikari</title>
+  <desc id="desc">A coral H mark on a dark rounded square, matching the Android app icon.</desc>
+  <rect width="108" height="108" rx="24" fill="#101112"/>
+  <g fill="none" stroke="#FF785C" stroke-linecap="round">
+    <path d="M36 28 47 80 M64 38 72 69" stroke-width="10"/>
+    <path d="M27 65 80 38" stroke-width="7.5"/>
+  </g>
+</svg>

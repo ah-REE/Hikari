@@ -1,0 +1,10 @@
+<resources>
+    <style name="Base.Theme.Hikari" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">@bool/hikari_light_bars</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:colorAccent">@color/hikari_accent</item>
+        <item name="android:windowBackground">@color/hikari_background</item>
+    </style>
+    <style name="Theme.Hikari" parent="Base.Theme.Hikari" />
+</resources>

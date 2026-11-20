@@ -1,0 +1,23 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <application android:label="Hikari" android:icon="@drawable/ic_hikari" android:theme="@style/Theme.Hikari" android:allowBackup="false" android:dataExtractionRules="@xml/data_extraction_rules" android:supportsRtl="true">
+        <activity android:name=".MainActivity" android:exported="true" android:windowSoftInputMode="adjustResize" android:supportsPictureInPicture="true" android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|uiMode" android:launchMode="singleTop">
+            <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+        <intent-filter android:autoVerify="false">
+                <action android:name="android.intent.action.VIEW"/><category android:name="android.intent.category.DEFAULT"/><category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https"/><data android:host="www.youtube.com"/><data android:host="youtube.com"/><data android:host="m.youtube.com"/><data android:host="youtu.be"/>
+            </intent-filter>
+            <intent-filter><action android:name="android.intent.action.SEND"/><category android:name="android.intent.category.DEFAULT"/><data android:mimeType="text/plain"/></intent-filter>
+        </activity>
+        <service android:name=".PlaybackService" android:foregroundServiceType="mediaPlayback" android:exported="false"><intent-filter><action android:name="androidx.media3.session.MediaSessionService"/></intent-filter></service>
+        <service android:name=".HikariDownloadService" android:foregroundServiceType="dataSync" android:exported="false"><intent-filter><action android:name="androidx.media3.exoplayer.downloadService.action.RESTART"/><category android:name="android.intent.category.DEFAULT"/></intent-filter></service>
+        <service android:name="androidx.media3.exoplayer.scheduler.PlatformScheduler$PlatformSchedulerService" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="true"/>
+    </application>
+</manifest>

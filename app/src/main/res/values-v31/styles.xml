@@ -1,0 +1,8 @@
+<resources>
+    <style name="Theme.Hikari" parent="Base.Theme.Hikari">
+        <item name="android:windowLightNavigationBar">@bool/hikari_light_bars</item>
+        <item name="android:windowSplashScreenBackground">@color/hikari_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/hikari_splash</item>
+        <item name="android:windowSplashScreenAnimationDuration">1200</item>
+    </style>
+</resources>

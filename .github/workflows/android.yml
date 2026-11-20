@@ -1,0 +1,26 @@
+name: Native Android
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Check source publication inputs
+        run: |
+          python3 -m unittest discover -s scripts -p 'test_*.py'
+          python3 scripts/check_publication.py
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+        with:
+          # Override the action's obsolete default, which requests the retired tools package.
+          packages: 'platform-tools platforms;android-36'
+          log-accepted-android-sdk-licenses: 'false'
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+      - run: ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug --no-daemon
+      # Manual validation only; do not publish APKs.
