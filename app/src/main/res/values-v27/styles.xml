@@ -1,0 +1,5 @@
+<resources>
+    <style name="Theme.Hikari" parent="Base.Theme.Hikari">
+        <item name="android:windowLightNavigationBar">@bool/hikari_light_bars</item>
+    </style>
+</resources>

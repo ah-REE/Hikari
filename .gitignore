@@ -1,0 +1,70 @@
+# Local Android/Gradle state
+.gradle/
+.kotlin/
+.idea/
+**/build/
+.cxx/
+.externalNativeBuild/
+*.iml
+local.properties
+
+# Local Python helper state
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Repository maintenance scripts
+/scripts/
+
+# Private validation evidence and generated packages
+/artifacts/
+/.playwright-mcp/
+/.publication-work/
+/captures/
+*.apk
+*.aab
+*.apks
+*.log
+*.hprof
+*.heapdump
+
+# Credentials, signing material, and local environment overrides
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+
+# Local working notes and private reports
+/scripts
+/notes/
+/reports/
+/docs/_private/
+/app/src/main/assets/licenses/Design-artwork.md
+
+# Private exports/backups (keep these outside the public repository)
+/backups/
+/private/
+*.bak
+*.backup
+
+# Legacy captured upstream responses; never commit real request/visitor data
+/*dump*.json
+/*dump*.html
+/output.json
+/search.html
+/ytInitialData.json
+/test_yt.json
+
+# Editor/OS temporary files
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
