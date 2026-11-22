@@ -54,9 +54,9 @@ class WatchViewModel(app: Application) : AndroidViewModel(app) {
                 } else {
                     val backgroundPlayback = PreferencesStore.get(getApplication()).state.value.backgroundPlayback
                     val embedFirst = getApplication<Application>().getSharedPreferences("hikari-native", 0).getBoolean("embedFirst", true)
-                    if (PlaybackPolicy.useEmbed(video.isShort, embedFirst, backgroundPlayback)) {
+                    if (!backgroundPlayback && PlaybackPolicy.useEmbed(video.isShort, embedFirst)) {
                         mutable.value = State(video = video, engine = "embed")
-                    } else resolveNative(video, preferEmbedForShort = !backgroundPlayback)
+                    } else resolveNative(video)
                 }
             } catch (e: CancellationException) { throw e }
             catch (e: Exception) { mutable.update { it.copy(loading = false, error = e.message ?: "Unable to load this video") } }
@@ -139,10 +139,12 @@ class WatchViewModel(app: Application) : AndroidViewModel(app) {
     private fun start(result: ResolvedVideo, index: Int, seek: Long? = null) {
         val player = controller.value ?: return
         val choice = result.choices[index]
+        val savedPosition = Library.get(getApplication()).state.value.history.firstOrNull { it.video.id == result.video.id }?.position ?: 0L
+        // A zero passed by a fresh player/surface is not a deliberate restart. Preserve History.
+        val position = (seek?.takeIf { it > 0L } ?: savedPosition).coerceAtLeast(0L)
         val extras = Bundle().apply { putString("audio", choice.audio); putString("video", result.video.json().toString()) }
         val metadata = MediaMetadata.Builder().setTitle(result.video.title).setArtist(result.video.channel).setArtworkUri(android.net.Uri.parse(result.video.thumbnail)).setExtras(extras).build()
         val item = MediaItem.Builder().setMediaId(result.video.id).setUri(choice.url).setMimeType(choice.mime).setMediaMetadata(metadata).setSubtitleConfigurations(listOfNotNull(selectedCaption).map { caption -> MediaItem.SubtitleConfiguration.Builder(android.net.Uri.parse(caption.url)).setLanguage(caption.language).setLabel(caption.name).setMimeType(caption.mime).build() }).build()
-        val position = seek ?: Library.get(getApplication()).state.value.history.firstOrNull { it.video.id == result.video.id }?.position ?: 0L
         player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
             .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, selectedCaption == null)
             .setPreferredTextLanguage(selectedCaption?.language).build()

@@ -5,20 +5,18 @@ import org.junit.Test
 
 class PlaybackPolicyTest {
     @Test
-    fun backgroundPlaybackUsesNativeForEveryPlayerPreferenceAndVideoType() {
-        listOf(false, true).forEach { isShort ->
-            listOf(false, true).forEach { embedFirst ->
-                assertFalse(PlaybackPolicy.useEmbed(isShort, embedFirst, backgroundPlayback = true))
-            }
-        }
+    fun backgroundPlaybackSettingDoesNotOverridePlayerChoice() {
+        assertTrue(PlaybackPolicy.useEmbed(isShort = false, embedFirst = true))
+        assertFalse(PlaybackPolicy.useEmbed(isShort = false, embedFirst = false))
+        assertTrue(PlaybackPolicy.useEmbed(isShort = true, embedFirst = false))
     }
 
     @Test
     fun disablingBackgroundPlaybackPreservesEmbedAndShortsPreferences() {
-        assertTrue(PlaybackPolicy.useEmbed(isShort = false, embedFirst = true, backgroundPlayback = false))
-        assertFalse(PlaybackPolicy.useEmbed(isShort = false, embedFirst = false, backgroundPlayback = false))
-        assertTrue(PlaybackPolicy.useEmbed(isShort = true, embedFirst = true, backgroundPlayback = false))
-        assertTrue(PlaybackPolicy.useEmbed(isShort = true, embedFirst = false, backgroundPlayback = false))
+        assertTrue(PlaybackPolicy.useEmbed(isShort = false, embedFirst = true))
+        assertFalse(PlaybackPolicy.useEmbed(isShort = false, embedFirst = false))
+        assertTrue(PlaybackPolicy.useEmbed(isShort = true, embedFirst = true))
+        assertTrue(PlaybackPolicy.useEmbed(isShort = true, embedFirst = false))
     }
 
     @Test

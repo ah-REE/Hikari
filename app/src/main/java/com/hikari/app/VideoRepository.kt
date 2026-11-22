@@ -47,8 +47,19 @@ class VideoRepository(private val context: Context) {
         (0 until a.length()).map { a.getJSONObject(it).video() }
     }.getOrDefault(emptyList())
     fun save(videos: List<Video>) { prefs.edit().putString("saved", JSONArray(videos.map { it.json() }).toString()).apply() }
-    fun dark() = prefs.getBoolean("dark", (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES)
-    fun setDark(value: Boolean) { prefs.edit().putBoolean("dark", value).apply() }
+    fun themeMode(): String = prefs.getString("themeMode", null)?.takeIf { it in setOf("system", "light", "dark") }
+        ?: if (prefs.contains("dark")) if (prefs.getBoolean("dark", true)) "dark" else "light" else "system"
+    fun dark(): Boolean = when (themeMode()) {
+        "dark" -> true
+        "light" -> false
+        else -> context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK == android.content.res.Configuration.UI_MODE_NIGHT_YES
+    }
+    fun setThemeMode(value: String) {
+        require(value in setOf("system", "light", "dark"))
+        val editor = prefs.edit().putString("themeMode", value)
+        if (value == "system") editor.remove("dark") else editor.putBoolean("dark", value == "dark")
+        editor.apply()
+    }
     suspend fun search(query: String): List<Video> = withContext(Dispatchers.IO) {
         val url = URI("https://www.youtube.com/results?search_query=${URLEncoder.encode(query, "UTF-8")}&hl=en").toURL()
         val connection = url.openConnection() as HttpURLConnection

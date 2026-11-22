@@ -80,9 +80,13 @@ class MainActivity : ComponentActivity() {
         if (android.os.Build.VERSION.SDK_INT < 31) {
             val prefs = base.getSharedPreferences("hikari-native", 0)
             val config = Configuration(base.resources.configuration)
-            val dark = prefs.getBoolean("dark", config.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES)
-            config.uiMode = (config.uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or if (dark) Configuration.UI_MODE_NIGHT_YES else Configuration.UI_MODE_NIGHT_NO
-            super.attachBaseContext(base.createConfigurationContext(config))
+            val mode = prefs.getString("themeMode", null)
+                ?: if (prefs.contains("dark")) if (prefs.getBoolean("dark", true)) "dark" else "light" else "system"
+            if (mode == "dark" || mode == "light") {
+                config.uiMode = (config.uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or
+                    if (mode == "dark") Configuration.UI_MODE_NIGHT_YES else Configuration.UI_MODE_NIGHT_NO
+                super.attachBaseContext(base.createConfigurationContext(config))
+            } else super.attachBaseContext(base)
         } else super.attachBaseContext(base)
     }
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -11,8 +11,7 @@ internal object PlaybackPolicy {
         visible.value = value
     }
 
-    fun useEmbed(isShort: Boolean, embedFirst: Boolean, backgroundPlayback: Boolean) =
-        !backgroundPlayback && (isShort || embedFirst)
+    fun useEmbed(isShort: Boolean, embedFirst: Boolean) = isShort || embedFirst
 
     fun shouldPause(playerVisible: Boolean, backgroundPlayback: Boolean) =
         !playerVisible && !backgroundPlayback

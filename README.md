@@ -17,7 +17,7 @@
 
 **Search for what you want. Watch it. Get back to your day.**
 
-Hikari puts search, your creators, and your personal library first, with light and dark themes and a calm interface throughout.
+Hikari puts search, your creators, and your personal library first, with system, light, and dark themes and a calm interface throughout.
 
 ## Screenshots
 
@@ -46,15 +46,15 @@ Likes, follows, and playlists stay local—they do not sync with a Google accoun
 
 ### Want to listen with the screen off?
 
-Turn on **Settings → Background playback**. Native background audio is **off by default**, and enabling it applies to the **next video you open**. You can then listen in other apps or with the screen off, with media controls where supported. A hidden embedded player does not keep playing.
+Turn on **Settings → Background playback**. Background audio is **off by default**. Enabling it immediately switches the current video to the native player and locks the player choice to Native while the setting is on. Native playback continues with system media controls when Hikari is hidden.
 
 Playback normally starts with YouTube's embedded player, with a native fallback. Video restrictions and upstream changes can affect playback, captions, and downloads; not every video will be available.
 
-## Download Hikari 1.0
+## Download Hikari 1.0.3
 
 Open the [**Releases page →**](https://github.com/ah-REE/Hikari/releases/latest) and download **`Hikari.apk`**. It is the signed, ready-to-install version for everyday use.
 
-`Hikari-debug.apk` is available for testing. `SHA256SUMS.txt` contains checksums for both APKs.
+`Hikari-debug.apk` is available for testing. `Hikari-SHA256SUMS.txt` contains checksums for both APKs.
 
 ### What you need
 

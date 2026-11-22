@@ -90,7 +90,10 @@ fun EmbedPlayback(
                     addJavascriptInterface(object {
                         // Read live visibility even if the iframe becomes ready after onStop.
                         @JavascriptInterface
-                        fun canPlay(): Boolean = PlaybackPolicy.playerVisible.value
+                        fun canPlay(): Boolean = !PlaybackPolicy.shouldPause(
+                            PlaybackPolicy.playerVisible.value,
+                            PreferencesStore.get(context).state.value.backgroundPlayback
+                        )
 
                         @JavascriptInterface
                         fun dimensions(width: Float, height: Float) {

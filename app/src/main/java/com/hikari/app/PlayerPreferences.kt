@@ -16,7 +16,7 @@ data class PlayerPreferences(
         .put("hideRecommendations", focusMode).put("disableAutoplay", !autoplayNext)
         .put("hideWatchedVideos", hideWatched).put("disableShorts", hideShorts)
         .put("enableDislikeCount", showDislikes).put("defaultTos", enhancedColors).put("enableScrollToTop", scrollToTop)
-        .put("enableTimeFitFinder", timeFitFinder).put("enableBackgroundPlayback", false)
+        .put("enableTimeFitFinder", timeFitFinder).put("enableBackgroundPlayback", backgroundPlayback)
 
     companion object {
         fun fromJson(j: JSONObject) = PlayerPreferences(
@@ -31,7 +31,7 @@ data class PlayerPreferences(
             j.optBoolean("defaultTos", j.optBoolean("defaultHdr")),
             j.optBoolean("enableScrollToTop", true),
             j.optBoolean("enableTimeFitFinder", false),
-            false)
+            j.optBoolean("enableBackgroundPlayback", false))
     }
 }
 

@@ -7,6 +7,7 @@
 .externalNativeBuild/
 *.iml
 local.properties
+**/local.properties
 
 # Local Python helper state
 __pycache__/
@@ -22,6 +23,7 @@ __pycache__/
 *.apk
 *.aab
 *.apks
+*.idsig
 *.log
 *.hprof
 *.heapdump
@@ -37,6 +39,10 @@ __pycache__/
 *.pfx
 *.pem
 *.key
+**/keystore.properties
+**/signing.properties
+**/secrets.properties
+.envrc
 
 # Local working notes and private reports
 /notes/

@@ -276,9 +276,20 @@ fun WatchScreen(
         preferences.seekSeconds,
         preferences.backgroundPlayback,
         transportEnabled
-    ) { activity.configurePip(transportEnabled); if (!transportEnabled) pausePlayback() }
+    ) {
+        activity.configurePip(transportEnabled)
+        if (!transportEnabled || !preferences.backgroundPlayback && !PlaybackPolicy.playerVisible.value) pausePlayback()
+    }
+    LaunchedEffect(preferences.backgroundPlayback, state.engine, video.id) {
+        if (preferences.backgroundPlayback && state.engine == "embed") {
+            model.fallbackToNative((position * 1000).toLong())
+        }
+    }
     val playerHidden by rememberUpdatedState {
-        if (state.engine == "embed") embed?.pause()
+        if (state.engine == "embed") {
+            if (preferences.backgroundPlayback) model.fallbackToNative((position * 1000).toLong())
+            else embed?.pause()
+        }
         if (position > 0) library.record(video, (position * 1000).toLong())
     }
     DisposableEffect(activity) {
@@ -630,12 +641,12 @@ fun WatchScreen(
                     onControlsReady = { controls ->
                         val firstReady = embed == null; embed = controls; controls.speed(
                         speed
-                    ); if (!transportEnabled || !PlaybackPolicy.playerVisible.value) controls.pause();
+                        ); if (!transportEnabled || !PlaybackPolicy.playerVisible.value && !preferences.backgroundPlayback) controls.pause();
                         val resume = lib.history.firstOrNull { it.video.id == video.id }?.position
                             ?: 0L; if (firstReady && resume > 0) controls.seek(resume / 1000f)
                     },
                     onStatus = { active, current, total ->
-                        if (active && !PlaybackPolicy.playerVisible.value) embed?.pause()
+                        if (active && !PlaybackPolicy.playerVisible.value && !preferences.backgroundPlayback) embed?.pause()
                         playing = active; position = current; duration = total
                         if (current > 0 && android.os.SystemClock.elapsedRealtime() - lastHistoryWrite > 10000) {
                             library.record(state.video ?: video, (current * 1000).toLong()); lastHistoryWrite =

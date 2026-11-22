@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -63,11 +64,19 @@ fun HikariApp(model: HikariViewModel = viewModel()) {
     val watch: WatchViewModel = viewModel()
     val app by model.state.collectAsStateWithLifecycle()
     val watchState by watch.state.collectAsStateWithLifecycle()
-    val library = Library.get(LocalContext.current)
+    val context = LocalContext.current
+    val library = Library.get(context)
     val lib by library.state.collectAsStateWithLifecycle()
     val activity = LocalActivity.current as MainActivity
+    val systemDark = isSystemInDarkTheme()
+    val dark = when (app.themeMode) {
+        "dark" -> true
+        "light" -> false
+        else -> systemDark
+    }
     val pip by activity.pip.collectAsStateWithLifecycle()
     val incoming by activity.pendingVideo.collectAsStateWithLifecycle()
+    var showOnboarding by rememberSaveable { mutableStateOf(OnboardingStore.shouldShow(context)) }
     var navigation by rememberSaveable(stateSaver = navigationSaver) { mutableStateOf(HikariNavigation()) }
     var expanded by rememberSaveable { mutableStateOf(false) }
     val screenState = rememberSaveableStateHolder()
@@ -107,15 +116,30 @@ fun HikariApp(model: HikariViewModel = viewModel()) {
     val search: () -> Unit = { model.clearSearch(); open(HikariRoute("search")) }
     val channel: (Video) -> Unit =
         { if (it.channelUrl.isNotBlank()) open(HikariRoute("channel", it.channelUrl, it.channel)) }
-    LaunchedEffect(incoming) { incoming?.let { play(it); activity.pendingVideo.value = null } }
-    LaunchedEffect(watchState.video?.id) { if (watch.state.value.video == null) expanded = false }
-    LaunchedEffect(lib.subscriptions) { model.refreshFeed(lib.subscriptions) }
-    LaunchedEffect(app.dark) {
-        if (android.os.Build.VERSION.SDK_INT >= 31) activity.getSystemService(android.app.UiModeManager::class.java)
-            .setApplicationNightMode(if (app.dark) android.app.UiModeManager.MODE_NIGHT_YES else android.app.UiModeManager.MODE_NIGHT_NO)
+    LaunchedEffect(incoming, showOnboarding) {
+        if (!showOnboarding) incoming?.let { play(it); activity.pendingVideo.value = null }
     }
-    DisposableEffect(app.dark) {
-        val style = if (app.dark) SystemBarStyle.dark(AndroidColor.TRANSPARENT) else SystemBarStyle.light(
+    LaunchedEffect(watchState.video?.id) { if (watch.state.value.video == null) expanded = false }
+    LaunchedEffect(lib.subscriptions, showOnboarding) {
+        if (!showOnboarding) model.refreshFeed(lib.subscriptions)
+    }
+    var appliedThemeMode by remember { mutableStateOf(app.themeMode) }
+    LaunchedEffect(app.themeMode) {
+        if (android.os.Build.VERSION.SDK_INT >= 31) {
+            val nightMode = when (app.themeMode) {
+                "dark" -> android.app.UiModeManager.MODE_NIGHT_YES
+                "light" -> android.app.UiModeManager.MODE_NIGHT_NO
+                // AUTO maps to an undefined app-local night override, so the device setting applies.
+                else -> android.app.UiModeManager.MODE_NIGHT_AUTO
+            }
+            activity.getSystemService(android.app.UiModeManager::class.java).setApplicationNightMode(nightMode)
+        } else if (appliedThemeMode != app.themeMode) {
+            activity.recreate()
+        }
+        appliedThemeMode = app.themeMode
+    }
+    DisposableEffect(dark) {
+        val style = if (dark) SystemBarStyle.dark(AndroidColor.TRANSPARENT) else SystemBarStyle.light(
             AndroidColor.TRANSPARENT,
             AndroidColor.TRANSPARENT
         )
@@ -124,7 +148,7 @@ fun HikariApp(model: HikariViewModel = viewModel()) {
     }
     BackHandler(!expanded && !pip && navigation.canGoBack, onBack = back)
     MaterialTheme(
-        colorScheme = animatedHikariColors(app.dark, app.reduceMotion), typography = HikariDesign.typography,
+        colorScheme = animatedHikariColors(dark, app.reduceMotion), typography = HikariDesign.typography,
         shapes = Shapes(
             small = RoundedCornerShape(8.dp),
             medium = RoundedCornerShape(12.dp),
@@ -135,6 +159,18 @@ fun HikariApp(model: HikariViewModel = viewModel()) {
             LocalReduceMotion provides app.reduceMotion,
             LocalContentColor provides MaterialTheme.colorScheme.onSurface
         ) {
+            if (showOnboarding) {
+                HikariOnboarding(onComplete = { skipSponsors, backgroundPlayback ->
+                    context.getSharedPreferences("hikari-native", 0).edit()
+                        .putBoolean("sponsorBlock", skipSponsors).apply()
+                    val preferences = PreferencesStore.get(context)
+                    if (preferences.state.value.backgroundPlayback != backgroundPlayback) {
+                        preferences.update(preferences.state.value.copy(backgroundPlayback = backgroundPlayback))
+                    }
+                    OnboardingStore.complete(context)
+                    showOnboarding = false
+                })
+            } else {
             val colors = MaterialTheme.colorScheme
             val keyboardVisible = WindowInsets.isImeVisible
             val child = route.takeIf { it.page !in roots }
@@ -316,6 +352,7 @@ fun HikariApp(model: HikariViewModel = viewModel()) {
                             }.fillMaxSize()
                             .then(if (!visible) Modifier.clearAndSetSemantics { } else Modifier))
                 }
+            }
             }
         }
     }

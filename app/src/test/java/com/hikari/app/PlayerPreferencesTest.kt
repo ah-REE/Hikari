@@ -60,23 +60,23 @@ class PlayerPreferencesTest {
             listOf(false, true).forEach { timeFit ->
                 val value = PlayerPreferences(timeFitFinder = timeFit, backgroundPlayback = background)
                 val json = JSONObject(value.json().toString())
-                assertFalse(json.getBoolean("enableBackgroundPlayback"))
+                assertEquals(background, json.getBoolean("enableBackgroundPlayback"))
                 assertEquals(timeFit, json.getBoolean("enableTimeFitFinder"))
-                assertFalse(PlayerPreferences.fromJson(json).backgroundPlayback)
+                assertEquals(background, PlayerPreferences.fromJson(json).backgroundPlayback)
                 assertEquals(timeFit, PlayerPreferences.fromJson(json).timeFitFinder)
             }
         }
     }
 
     @Test
-    fun copyingOtherPreferencesKeepsBackgroundPlaybackOff() {
+    fun copyingOtherPreferencesPreservesBackgroundPlayback() {
         listOf(false, true).forEach { enabled ->
             val updated = PlayerPreferences(timeFitFinder = true, backgroundPlayback = enabled).copy(
                 defaultSpeed = 1.5f, seekSeconds = 30, focusMode = true, autoplayNext = true,
                 hideWatched = true, hideShorts = true, showDislikes = true, enhancedColors = true, scrollToTop = false
             )
             assertTrue(updated.timeFitFinder)
-            assertFalse(PlayerPreferences.fromJson(updated.json()).backgroundPlayback)
+            assertEquals(enabled, PlayerPreferences.fromJson(updated.json()).backgroundPlayback)
         }
     }
 
@@ -89,14 +89,14 @@ class PlayerPreferencesTest {
                 val merged = current.json()
                 val imported = legacyBackup.getJSONObject("preferences")
                 imported.keys().forEach { key -> merged.put(key, imported.get(key)) }
-                val expected = current.copy(defaultSpeed = 1.5f, backgroundPlayback = false)
+                val expected = current.copy(defaultSpeed = 1.5f)
                 assertEquals(expected, PlayerPreferences.fromJson(merged))
 
                 val replacement = current.copy(timeFitFinder = !timeFit, backgroundPlayback = !background)
                 val backup = JSONObject(JSONObject().put("preferences", replacement.json()).toString())
                 val explicit = backup.getJSONObject("preferences")
                 explicit.keys().forEach { key -> merged.put(key, explicit.get(key)) }
-                assertEquals(replacement.copy(backgroundPlayback = false), PlayerPreferences.fromJson(merged))
+                assertEquals(replacement, PlayerPreferences.fromJson(merged))
             }
         }
     }

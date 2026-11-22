@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -22,7 +23,10 @@ import org.json.JSONObject
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -48,7 +52,7 @@ fun SettingsScreen(model: HikariViewModel) {
                     val data = LibraryCodec.encode(library.state.value).put("version", 4)
                         .put("watchLater", JSONArray(state.saved.map { it.json() })).put(
                             "preferences",
-                            options.json().put("theme", if (state.dark) "dark" else "light")
+                            options.json().put("theme", state.themeMode)
                                 .put("embedFirst", embedFirst)
                                 .put("sponsorBlock", sponsors).put("sponsorAutoSkip", sponsorAuto)
                                 .put("reduceMotion", state.reduceMotion)
@@ -88,8 +92,8 @@ fun SettingsScreen(model: HikariViewModel) {
                 }
                 library.merge(parsed.first); model.importSaved(parsed.second)
                 parsed.third?.let { imported ->
-                    imported.optString("theme").takeIf { it == "dark" || it == "light" }
-                        ?.let { model.theme(it == "dark") }
+                    imported.optString("theme").takeIf { it in setOf("system", "dark", "light") }
+                        ?.let(model::theme)
                     // Merge absent fields so older backups cannot reset newer settings.
                     val merged = options.json()
                     imported.keys().forEach { key -> merged.put(key, imported.get(key)) }
@@ -123,27 +127,33 @@ fun SettingsScreen(model: HikariViewModel) {
             SettingRow(
                 Icons.Outlined.LightMode,
                 "Appearance",
-                if (state.dark) "Dark · easy on the eyes" else "Light · a softer contrast",
-                value = if (state.dark) "Dark" else "Light",
-                onClick = { model.theme(!state.dark) })
+                when (state.themeMode) {
+                    "dark" -> "Easy on the eyes"
+                    "light" -> "A softer contrast"
+                    else -> "Follows your device setting"
+                },
+                value = state.themeMode.replaceFirstChar { it.uppercase() },
+                onClick = { optionSheet = "theme" })
         }
         item { SettingsLabel("Playback") }
         item {
             SettingRow(
                 Icons.Outlined.Movie,
                 "Player",
-                if (options.backgroundPlayback) "Native player for background playback"
+                if (options.backgroundPlayback) "Native player"
                 else if (embedFirst) "YouTube player first" else "Native player first",
-                value = if (options.backgroundPlayback || !embedFirst) "Native" else "Automatic",
+                value = if (options.backgroundPlayback) "Locked" else if (embedFirst) "Automatic" else "Native",
+                enabled = !options.backgroundPlayback,
                 onClick = { playback = true })
         }
         item {
             SettingRow(
                 Icons.Outlined.Headphones,
                 "Background playback",
-                "Upcoming feature",
-                value = "Upcoming",
-                onClick = {})
+                if (options.backgroundPlayback) "Video plays when Hikari is hidden"
+                else "Pauses when Hikari is hidden",
+                checked = options.backgroundPlayback,
+                onClick = { preferencesStore.update(options.copy(backgroundPlayback = !options.backgroundPlayback)) })
         }
         item {
             SettingRow(
@@ -307,9 +317,22 @@ fun SettingsScreen(model: HikariViewModel) {
         }
     }
     if (optionSheet != null) HikariSheet(
-        if (optionSheet == "speed") "Default playback speed" else "Seek interval",
+        when (optionSheet) {
+            "speed" -> "Default playback speed"
+            "theme" -> "Appearance"
+            else -> "Seek interval"
+        },
         { optionSheet = null }) {
-        if (optionSheet == "speed") listOf(
+        if (optionSheet == "theme") listOf(
+            Triple("System", "Follows your device’s light or dark setting", "system"),
+            Triple("Light", "A softer contrast", "light"),
+            Triple("Dark", "Easy on the eyes", "dark")
+        ).forEach { (label, description, mode) ->
+            SheetOption(label, subtitle = description, selected = state.themeMode == mode) {
+                model.theme(mode); optionSheet = null
+            }
+        }
+        else if (optionSheet == "speed") listOf(
             .5f,
             .75f,
             1f,
@@ -339,12 +362,12 @@ fun SettingsScreen(model: HikariViewModel) {
     if (playback) HikariSheet("Playback", { playback = false }) {
         SheetOption(
             "Automatic",
-            "YouTube player first. Restricted videos use native playback. Background playback takes priority when enabled.",
+            "YouTube player first. Restricted videos use native playback. Background playback locks this to Native.",
             selected = embedFirst
         ) { embedFirst = true; prefs.edit().putBoolean("embedFirst", true).apply(); playback = false }
         SheetOption(
             "Native player",
-            "Stream quality and audio tracks. Background audio requires Background playback to be enabled.",
+            "Stream quality and audio tracks. Required for Background playback.",
             selected = !embedFirst
         ) { embedFirst = false; prefs.edit().putBoolean("embedFirst", false).apply(); playback = false }
         Text(
@@ -387,14 +410,29 @@ fun SettingsScreen(model: HikariViewModel) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            FilledTonalButton(
+            Surface(
                 onClick = {
-                    context.startActivity(
-                        Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/ah-REE/Hikari"))
-                    )
-                }
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/ah-REE/Hikari")))
+                },
+                shape = RoundedCornerShape(20.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Star Hikari on GitHub")
+                Row(
+                    Modifier.padding(horizontal = 18.dp, vertical = 18.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Surface(shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.secondaryContainer) {
+                        Icon(Icons.Filled.Star, contentDescription = null, modifier = Modifier.padding(10.dp), tint = MaterialTheme.colorScheme.onSecondaryContainer)
+                    }
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Text("Enjoying Hikari?", style = MaterialTheme.typography.titleSmall)
+                        Text("Give the project a star on GitHub", style = MaterialTheme.typography.bodySmall)
+                    }
+                    Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = "Open GitHub")
+                }
             }
         }
     }
@@ -417,6 +455,7 @@ private fun SettingRow(
     description: String,
     value: String? = null,
     checked: Boolean? = null,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     Row(
@@ -424,7 +463,8 @@ private fun SettingRow(
             if (checked != null) Modifier.toggleable(
                 checked,
                 role = Role.Switch,
-                onValueChange = { onClick() }) else Modifier.clickable(role = Role.Button, onClick = onClick)
+                enabled = enabled,
+                onValueChange = { onClick() }) else Modifier.clickable(enabled = enabled, role = Role.Button, onClick = onClick)
         ).heightIn(min = 68.dp).padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -457,11 +497,9 @@ private fun SettingRow(
                 value,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
-            ); Icon(
+            ); if (enabled) Icon(
                 if (value != null) Icons.Outlined.KeyboardArrowDown else Icons.Outlined.ChevronRight,
-                null,
-                Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

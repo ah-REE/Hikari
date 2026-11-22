@@ -22,6 +22,7 @@ data class HikariState(
     val searched: Boolean = false,
     val error: String? = null,
     val dark: Boolean = true,
+    val themeMode: String = "system",
     val hasMore: Boolean = false,
     val loadingMore: Boolean = false,
     val recents: List<String> = emptyList(),
@@ -65,6 +66,7 @@ class HikariViewModel(application: Application) : AndroidViewModel(application) 
         HikariState(
             saved = repository.saved(),
             dark = repository.dark(),
+            themeMode = repository.themeMode(),
             reduceMotion = prefs.getBoolean("reduceMotion", false),
             recents = runCatching {
                 org.json.JSONArray(prefs.getString("searchRecents", "[]"))
@@ -288,7 +290,8 @@ class HikariViewModel(application: Application) : AndroidViewModel(application) 
         clearRecents(); mutable.update { it.copy(saved = emptyList()) }; repository.save(emptyList())
     }
 
-    fun theme(dark: Boolean) {
-        repository.setDark(dark); mutable.update { it.copy(dark = dark) }
+    fun theme(mode: String) {
+        repository.setThemeMode(mode)
+        mutable.update { it.copy(themeMode = mode, dark = repository.dark()) }
     }
 }
